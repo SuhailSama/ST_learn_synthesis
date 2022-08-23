@@ -1,0 +1,49 @@
+---------------------------------------
+Begin PBS Prologue Wed Jun 30 16:26:08 EDT 2021
+Job ID:     2240321.sched-torque.pace.gatech.edu
+User ID:    salsalehi3
+Job name:   transf
+Queue:      embers
+End PBS Prologue Wed Jun 30 16:26:08 EDT 2021
+---------------------------------------
+[I 16:26:14.650 NotebookApp] [nb_conda_kernels] enabled, 11 kernels found
+[I 16:26:14.650 NotebookApp] [nb_conda_kernels] enabled, 11 kernels found
+[I 16:26:16.741 NotebookApp] JupyterLab extension loaded from /usr/local/pace-apps/manual/packages/anaconda3/2020.02/lib/python3.7/site-packages/jupyterlab
+[I 16:26:16.741 NotebookApp] JupyterLab application directory is /usr/local/pace-apps/manual/packages/anaconda3/2020.02/share/jupyter/lab
+[I 16:26:16.741 NotebookApp] JupyterLab extension loaded from /usr/local/pace-apps/manual/packages/anaconda3/2020.02/lib/python3.7/site-packages/jupyterlab
+[I 16:26:16.741 NotebookApp] JupyterLab application directory is /usr/local/pace-apps/manual/packages/anaconda3/2020.02/share/jupyter/lab
+[I 16:26:16.744 NotebookApp] Serving notebooks from local directory: /storage/coda1/p-mkemp6/0/salsalehi3/Organoid_Suhail/stlcg
+[I 16:26:16.744 NotebookApp] The Jupyter Notebook is running at:
+[I 16:26:16.744 NotebookApp] Serving notebooks from local directory: /storage/coda1/p-mkemp6/0/salsalehi3/Organoid_Suhail/stlcg
+[I 16:26:16.744 NotebookApp] http://atl1-1-02-010-26-l.pace.gatech.edu:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+[I 16:26:16.744 NotebookApp]  or http://127.0.0.1:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+[I 16:26:16.744 NotebookApp] The Jupyter Notebook is running at:
+[I 16:26:16.744 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[I 16:26:16.744 NotebookApp] http://atl1-1-02-010-26-l.pace.gatech.edu:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+[I 16:26:16.744 NotebookApp]  or http://127.0.0.1:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+[I 16:26:16.744 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[C 16:26:16.787 NotebookApp] 
+    
+    To access the notebook, open this file in a browser:
+        file:///storage/home/hcoda1/5/salsalehi3/.local/share/jupyter/runtime/nbserver-297841-open.html
+    Or copy and paste one of these URLs:
+        http://atl1-1-02-010-26-l.pace.gatech.edu:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+     or http://127.0.0.1:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+[C 16:26:16.787 NotebookApp]
+
+To access the notebook, open this file in a browser:
+file:///storage/home/hcoda1/5/salsalehi3/.local/share/jupyter/runtime/nbserver-297841-open.html
+Or copy and paste one of these URLs:
+http://atl1-1-02-010-26-l.pace.gatech.edu:54127/?token=0ee881ffcf7cd34d0ff97438d8db33e7ff8b9a989ac471b8
+---------------------------------------
+Begin PBS Epilogue Wed Jun 30 17:31:40 EDT 2021
+Job ID:     2240321.sched-torque.pace.gatech.edu
+User ID:    salsalehi3
+Job name:   transf
+Resources:  nodes=1:ppn=12,mem=32gb,walltime=04:00:00,epilogue=/storage/home/hcoda1/5/salsalehi3/.tmp/transf.pbs.epi,neednodes=1:ppn=12
+Rsrc Used:  cput=00:00:04,vmem=763120kb,walltime=01:05:32,mem=47232kb,energy_used=0
+Queue:      embers
+Nodes:     
+atl1-1-02-010-26-l.pace.gatech.edu
+End PBS Epilogue Wed Jun 30 17:31:40 EDT 2021
+---------------------------------------

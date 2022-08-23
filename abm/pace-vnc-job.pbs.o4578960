@@ -1,0 +1,21 @@
+---------------------------------------
+Begin PBS Prologue Wed Jun  1 13:59:59 EDT 2022
+Job ID:     4578960.sched-torque.pace.gatech.edu
+User ID:    salsalehi3
+Job name:   pace-vnc-job.pbs
+Queue:      embers
+End PBS Prologue Wed Jun  1 13:59:59 EDT 2022
+---------------------------------------
+---------------------------------------
+Begin PBS Epilogue Wed Jun  1 22:00:12 EDT 2022
+Job ID:     4578960.sched-torque.pace.gatech.edu
+User ID:    salsalehi3
+Job name:   pace-vnc-job.pbs
+Resources:  nodes=4:ppn=10:gpus=2,walltime=08:00:00,epilogue=/storage/home/hcoda1/5/salsalehi3/.tmp/pace-vnc-job.pbs.epi,neednodes=4:ppn=10:gpus=2
+Rsrc Used:  cput=78:57:28,vmem=19600944kb,walltime=08:00:10,mem=3045856kb,energy_used=0
+Queue:      embers
+Nodes:     
+atl1-1-03-002-25.pace.gatech.edu atl1-1-03-002-27.pace.gatech.edu 
+atl1-1-03-002-29.pace.gatech.edu atl1-1-03-002-31.pace.gatech.edu
+End PBS Epilogue Wed Jun  1 22:00:12 EDT 2022
+---------------------------------------

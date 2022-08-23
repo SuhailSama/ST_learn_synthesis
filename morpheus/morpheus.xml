@@ -1,0 +1,658 @@
+<MorpheusModel version="4">
+    <Description>
+        <Title>morpheus_EP_092020_cellposition</Title>
+        <Details></Details>
+    </Description>
+    <Global>
+        <Field symbol="U" value="0" name="chemoattractant">
+            <Diffusion rate="0.5"/>
+        </Field>
+        <Field symbol="BMP4" value="0" name="chemoattractant-mesoderm">
+            <Diffusion rate="0.5"/>
+        </Field>
+        <Field symbol="BMP2" value="0" name="chemoattractant-endoderm">
+            <Diffusion rate="0.5"/>
+        </Field>
+        <Field symbol="Wnt5a" value="0" name="chemorepellent-mesoderm">
+            <Diffusion rate="0.5"/>
+        </Field>
+        <Field symbol="Wnt11" value="0" name="chemorepellent-endoderm">
+            <Diffusion rate="0.5"/>
+        </Field>
+        <System solver="euler" time-step="5">
+            <Constant symbol="d" value="0.01" name="degradation U"/>
+            <DiffEqn symbol-ref="U">
+                <Expression>pU - d*U</Expression>
+            </DiffEqn>
+            <DiffEqn symbol-ref="BMP4">
+                <Expression>pBMP4 - d*BMP4</Expression>
+            </DiffEqn>
+            <DiffEqn symbol-ref="BMP2">
+                <Expression>pBMP2 - d*BMP2</Expression>
+            </DiffEqn>
+            <DiffEqn symbol-ref="Wnt5a">
+                <Expression>pWnt5a - d*Wnt5a</Expression>
+            </DiffEqn>
+            <DiffEqn symbol-ref="Wnt11">
+                <Expression>pWnt11 - d*Wnt11</Expression>
+            </DiffEqn>
+        </System>
+        <Variable symbol="celltype" value="0"/>
+        <Constant symbol="cell_density" value="0.003"/>
+        <Variable symbol="num_mesendo" value="celltype.mesendoderm.size" name="Sum of mesendodermal cells"/>
+        <Variable symbol="mn_chemo_strength" value="0.0" name="mn_chemo_strength"/>
+        <Variable symbol="me_chemo_strength" value="0.0" name="me_chemo_strength"/>
+        <Variable symbol="en_chemo_strength" value="0.0" name="en_chemo_strength"/>
+        <Variable symbol="pp_chemo_strength" value="0.0" name="pp_chemo_strength"/>
+        <Variable symbol="plot_freq" value="500"/>
+        <Variable symbol="log_freq" value="100"/>
+    </Global>
+    <Space>
+        <Lattice class="square">
+            <Size symbol="size" value="500 500 0"/>
+            <BoundaryConditions>
+                <Condition boundary="x" type="noflux"/>
+                <Condition boundary="-x" type="noflux"/>
+                <Condition boundary="y" type="noflux"/>
+                <Condition boundary="-y" type="noflux"/>
+            </BoundaryConditions>
+            <NodeLength value="1.0"/>
+            <Neighborhood>
+                <Distance>2.5</Distance>
+            </Neighborhood>
+        </Lattice>
+        <SpaceSymbol symbol="space"/>
+        <MembraneLattice>
+            <Resolution value="100"/>
+            <SpaceSymbol symbol="mem"/>
+        </MembraneLattice>
+    </Space>
+    <Time>
+        <StartTime value="0"/>
+        <StopTime value="12000"/>
+        <SaveInterval value="0"/>
+        <RandomSeed value="1"/>
+        <TimeSymbol symbol="time"/>
+    </Time>
+    <CellTypes>
+        <CellType class="biological" name="ppcells">
+            <Property symbol="celltype" value="0"/>
+            <Property symbol="c" value="100.0" name="chemotactic strength"/>
+            <Property symbol="pU" value="0" name="production U"/>
+            <Property symbol="pBMP4" value="0" name="production BMP4"/>
+            <Property symbol="pBMP2" value="0" name="production BMP2"/>
+            <Property symbol="pWnt5a" value="0" name="production Wnt5a"/>
+            <Property symbol="pWnt11" value="0" name="production Wnt11"/>
+            <Event time-step="5">
+                <Condition>time >= 0</Condition>
+                <Rule symbol-ref="pU">
+                    <Expression>0.02</Expression>
+                </Rule>
+            </Event>
+            <VolumeConstraint target="60" strength="1"/>
+            <SurfaceConstraint target="0.85" mode="aspherity" strength="1"/>
+            <Chemotaxis field="U" contact-inhibition="false" strength="pp_chemo_strength" retraction="true"/>
+            <Property symbol="ppneighbors" value="0" name="number of neighboring ppcells"/>
+            <NeighborhoodReporter>
+                <Input scaling="cell" value="cell.type == celltype.ppcells.id"/>
+                <Output symbol-ref="ppneighbors" mapping="sum"/>
+            </NeighborhoodReporter>
+            <Property symbol="pro" value="0" name="proliferation rate"/>
+            <Property symbol="dv" value="0" name="divisions"/>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>pro >= 0</Condition>
+                <Rule symbol-ref="pro">
+                    <Expression>pro+rand_int(0,1)</Expression>
+                </Rule>
+            </Event>
+            <CellDivision division-plane="random">
+                <Condition>pro >= 36</Condition>
+                <Triggers>
+                    <Rule symbol-ref="dv">
+                        <Expression>dv+1</Expression>
+                    </Rule>
+                    <Rule symbol-ref="pro">
+                        <Expression>0</Expression>
+                    </Rule>
+                </Triggers>
+            </CellDivision>
+            <Property symbol="nanog" value="rand_int(5, 100)"/>
+            <Property symbol="gata6" value="rand_int(0, 5)"/>
+            <Property symbol="dox" value="3.5"/>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>nanog>gata6</Condition>
+                <Rule symbol-ref="nanog">
+                    <Expression>nanog+1</Expression>
+                </Rule>
+                <Rule symbol-ref="gata6">
+                    <Expression>if(gata6>=1, gata6-1, 0)</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>gata6>nanog</Condition>
+                <Rule symbol-ref="gata6">
+                    <Expression>gata6+1</Expression>
+                </Rule>
+                <Rule symbol-ref="nanog">
+                    <Expression>if(nanog>=1, nanog-1, 0)</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>time >= 1200</Condition>
+                <Rule symbol-ref="gata6">
+                    <Expression>gata6+dox</Expression>
+                </Rule>
+            </Event>
+            <ChangeCellType newCellType="mesendoderm">
+                <Condition>gata6 - nanog > 150</Condition>
+                <Triggers>
+                    <Rule symbol-ref="celltype">
+                        <Expression>celltype + 1</Expression>
+                    </Rule>
+                </Triggers>
+            </ChangeCellType>
+            <!--    <Disabled>
+        <ChangeCellType newCellType="mesendoderm">
+            <Condition>mesendo_neighbors>6</Condition>
+            <Triggers/>
+        </ChangeCellType>
+    </Disabled>
+-->
+        </CellType>
+        <CellType class="biological" name="mesendoderm">
+            <Property symbol="celltype" value="1"/>
+            <Property symbol="c" value="100.0" name="chemotactic strength"/>
+            <Property symbol="pU" value="0" name="production U"/>
+            <Property symbol="pBMP4" value="0.01" name="production BMP4"/>
+            <Property symbol="pBMP2" value="0.01" name="production BMP2"/>
+            <Property symbol="pWnt5a" value="0.01" name="production Wnt5a"/>
+            <Property symbol="pWnt11" value="0.01" name="production Wnt11"/>
+            <Event time-step="5">
+                <Condition>time >= 0</Condition>
+                <Rule symbol-ref="pU">
+                    <Expression>0</Expression>
+                </Rule>
+                <!--    <Disabled>
+        <Rule symbol-ref="pBMP4">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pBMP2">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pWnt5a">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pWnt11">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+            </Event>
+            <Property symbol="mesendo_neighbors" value="0" name="number of neighboring mesendodermal cells"/>
+            <VolumeConstraint target="60" strength="1"/>
+            <SurfaceConstraint target="0.85" mode="aspherity" strength="1"/>
+            <Chemotaxis field="U" contact-inhibition="false" strength="mn_chemo_strength" retraction="true"/>
+            <NeighborhoodReporter>
+                <Input scaling="cell" value="cell.type == celltype.mesendoderm.id"/>
+                <Output symbol-ref="mesendo_neighbors" mapping="sum"/>
+            </NeighborhoodReporter>
+            <Property symbol="pro" value="0" name="proliferation rate"/>
+            <Property symbol="dv" value="0" name="divisions"/>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>pro >= 0</Condition>
+                <Rule symbol-ref="pro">
+                    <Expression>pro+rand_int(0,1)</Expression>
+                </Rule>
+            </Event>
+            <CellDivision division-plane="random">
+                <Condition>pro >= 72</Condition>
+                <Triggers>
+                    <Rule symbol-ref="dv">
+                        <Expression>dv+1</Expression>
+                    </Rule>
+                    <Rule symbol-ref="pro">
+                        <Expression>0</Expression>
+                    </Rule>
+                </Triggers>
+            </CellDivision>
+            <Property symbol="mtf" value="rand_int(0, 25)"/>
+            <Property symbol="etf" value="rand_int(0, 25)"/>
+            <Function symbol="mtf_high">
+                <Expression>if(mtf>etf,1,0)</Expression>
+            </Function>
+            <Function symbol="etf_high">
+                <Expression>if(etf>mtf,1,0)</Expression>
+            </Function>
+            <Property symbol="c1_BMP4" value="0"/>
+            <Property symbol="c1_BMP2" value="0"/>
+            <Mapper>
+                <Input value="BMP4"/>
+                <Output symbol-ref="c1_BMP4" mapping="average"/>
+            </Mapper>
+            <Mapper>
+                <Input value="BMP2"/>
+                <Output symbol-ref="c1_BMP2" mapping="average"/>
+            </Mapper>
+            <MembraneProperty symbol="BMP4_mem" value="0">
+                <Diffusion rate="0"/>
+            </MembraneProperty>
+            <MembraneProperty symbol="BMP2_mem" value="0">
+                <Diffusion rate="0"/>
+            </MembraneProperty>
+            <NeighborhoodReporter>
+                <Input scaling="length" value="BMP4" noflux-cell-medium="true"/>
+                <Output symbol-ref="BMP4_mem" mapping="average"/>
+            </NeighborhoodReporter>
+            <NeighborhoodReporter>
+                <Input scaling="length" value="BMP2" noflux-cell-medium="true"/>
+                <Output symbol-ref="BMP2_mem" mapping="average"/>
+            </NeighborhoodReporter>
+            <Property symbol="c2_BMP4" value="0"/>
+            <Property symbol="c2_BMP2" value="0"/>
+            <Mapper>
+                <Input value="BMP4_mem"/>
+                <Output symbol-ref="c2_BMP4" mapping="average"/>
+            </Mapper>
+            <Mapper>
+                <Input value="BMP2_mem"/>
+                <Output symbol-ref="c2_BMP2" mapping="average"/>
+            </Mapper>
+            <Property symbol="c1_Wnt5a" value="0"/>
+            <Property symbol="c1_Wnt11" value="0"/>
+            <Mapper>
+                <Input value="Wnt5a"/>
+                <Output symbol-ref="c1_Wnt5a" mapping="average"/>
+            </Mapper>
+            <Mapper>
+                <Input value="Wnt11"/>
+                <Output symbol-ref="c1_Wnt11" mapping="average"/>
+            </Mapper>
+            <MembraneProperty symbol="Wnt5a_mem" value="0">
+                <Diffusion rate="0"/>
+            </MembraneProperty>
+            <MembraneProperty symbol="Wnt11_mem" value="0">
+                <Diffusion rate="0"/>
+            </MembraneProperty>
+            <NeighborhoodReporter>
+                <Input scaling="length" value="Wnt5a" noflux-cell-medium="true"/>
+                <Output symbol-ref="Wnt5a_mem" mapping="average"/>
+            </NeighborhoodReporter>
+            <NeighborhoodReporter>
+                <Input scaling="length" value="Wnt11" noflux-cell-medium="true"/>
+                <Output symbol-ref="Wnt11_mem" mapping="average"/>
+            </NeighborhoodReporter>
+            <Property symbol="c2_Wnt5a" value="0"/>
+            <Property symbol="c2_Wnt11" value="0"/>
+            <Mapper>
+                <Input value="Wnt5a_mem"/>
+                <Output symbol-ref="c2_Wnt5a" mapping="average"/>
+            </Mapper>
+            <Mapper>
+                <Input value="Wnt11_mem"/>
+                <Output symbol-ref="c2_Wnt11" mapping="average"/>
+            </Mapper>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>time>4800 and mtf_high == 1</Condition>
+                <Rule symbol-ref="mtf">
+                    <Expression>mtf+1</Expression>
+                </Rule>
+                <Rule symbol-ref="etf">
+                    <Expression>if(etf>=1, etf-1, 0)</Expression>
+                </Rule>
+                <Rule symbol-ref="pBMP4" name="production BMP4">
+                    <Expression>0.02</Expression>
+                </Rule>
+                <Rule symbol-ref="pWnt5a" name="production Wnt5a">
+                    <Expression>0.02</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>time>4800 and etf_high == 1</Condition>
+                <Rule symbol-ref="etf">
+                    <Expression>etf+1</Expression>
+                </Rule>
+                <Rule symbol-ref="mtf">
+                    <Expression>if(mtf>=1, mtf-1, 0)</Expression>
+                </Rule>
+                <Rule symbol-ref="pBMP2" name="production BMP2">
+                    <Expression>0.02</Expression>
+                </Rule>
+                <Rule symbol-ref="pWnt11" name="production Wnt11">
+                    <Expression>0.02</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25" name="BMP4_reg">
+                <Condition>time>4800 and c1_BMP4+c2_BMP4>c1_BMP2+c2_BMP2</Condition>
+                <Rule symbol-ref="mtf">
+                    <Expression>mtf+1</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25" name="BMP2_reg">
+                <Condition>time>4800 and c1_BMP2+c2_BMP2>c1_BMP4+c2_BMP4</Condition>
+                <Rule symbol-ref="etf">
+                    <Expression>etf+1</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25" name="Wnt5a_reg">
+                <Condition>time>4800 and c1_Wnt5a+c2_Wnt5a>c1_Wnt11+c2_Wnt11 and etf_high == 1</Condition>
+                <Rule symbol-ref="etf">
+                    <Expression>if(etf>=1, etf-2, 0)</Expression>
+                </Rule>
+            </Event>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25" name="Wnt11_reg">
+                <Condition>time>4800 and c1_Wnt11+c2_Wnt11>c1_Wnt5a+c2_Wnt5a and mtf_high == 1</Condition>
+                <Rule symbol-ref="mtf">
+                    <Expression>if(mtf>=1, mtf-2, 0)</Expression>
+                </Rule>
+            </Event>
+            <ChangeCellType newCellType="mesoderm">
+                <Condition>mtf>etf and mtf>50</Condition>
+                <Triggers>
+                    <Rule symbol-ref="celltype">
+                        <Expression>celltype + 1</Expression>
+                    </Rule>
+                </Triggers>
+            </ChangeCellType>
+            <ChangeCellType newCellType="endoderm">
+                <Condition>etf>mtf and etf>50</Condition>
+                <Triggers>
+                    <Rule symbol-ref="celltype">
+                        <Expression>celltype + 2</Expression>
+                    </Rule>
+                </Triggers>
+            </ChangeCellType>
+            <Mapper name="Count mesendodermal cells">
+                <Input value="celltype.mesendoderm.size"/>
+                <Output symbol-ref="num_mesendo" mapping="sum"/>
+            </Mapper>
+            <Property symbol="prob" value="0.9" name="prob-mesoderm"/>
+            <Property symbol="assign" value="rand_uni(0, 1)"/>
+            <!--    <Disabled>
+        <Event trigger="when true" compute-time="on-trigger" time-step="25" name="ABA_switch">
+            <Condition>mtf+etf>=40</Condition>
+            <Rule symbol-ref="mtf">
+                <Expression>if(assign&lt;prob,mtf+5+rand_int(0, 5),0)</Expression>
+            </Rule>
+            <Rule symbol-ref="etf">
+                <Expression>if(assign>prob,etf+5+rand_int(0, 5),0)</Expression>
+            </Rule>
+        </Event>
+    </Disabled>
+-->
+        </CellType>
+        <CellType class="biological" name="mesoderm">
+            <Property symbol="celltype" value="2"/>
+            <Property symbol="c" value="100.0" name="chemotactic strength"/>
+            <Property symbol="pU" value="0" name="production U"/>
+            <Property symbol="pBMP4" value="0.02" name="production BMP4"/>
+            <Property symbol="pBMP2" value="0" name="production BMP2"/>
+            <Property symbol="pWnt5a" value="0.02" name="production Wnt5a"/>
+            <Property symbol="pWnt11" value="0" name="production Wnt11"/>
+            <Event time-step="5">
+                <Condition>time >= 0</Condition>
+                <Rule symbol-ref="pU">
+                    <Expression>0</Expression>
+                </Rule>
+                <!--    <Disabled>
+        <Rule symbol-ref="pBMP4">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pBMP2">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pWnt5a">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pWnt11">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+            </Event>
+            <Property symbol="meso_neighbors" value="0" name="number of neighboring mesodermal cells"/>
+            <VolumeConstraint target="60" strength="1"/>
+            <SurfaceConstraint target="0.85" mode="aspherity" strength="1"/>
+            <Chemotaxis field="U" contact-inhibition="false" strength="me_chemo_strength" retraction="true"/>
+            <NeighborhoodReporter>
+                <Input scaling="cell" value="cell.type == celltype.mesoderm.id"/>
+                <Output symbol-ref="meso_neighbors" mapping="sum"/>
+            </NeighborhoodReporter>
+            <Property symbol="pro" value="0" name="proliferation rate"/>
+            <Property symbol="dv" value="0" name="divisions"/>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>pro >= 0</Condition>
+                <Rule symbol-ref="pro">
+                    <Expression>pro+rand_int(0,1)</Expression>
+                </Rule>
+            </Event>
+            <CellDivision division-plane="random">
+                <Condition>pro >= 144</Condition>
+                <Triggers>
+                    <Rule symbol-ref="dv">
+                        <Expression>dv+1</Expression>
+                    </Rule>
+                    <Rule symbol-ref="pro">
+                        <Expression>0</Expression>
+                    </Rule>
+                </Triggers>
+            </CellDivision>
+            <!--    <Disabled>
+        <Property symbol="mtf" value="rand_int(0, 25)"/>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Property symbol="etf" value="rand_int(0, 25)"/>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Chemotaxis field="BMP4" contact-inhibition="false" strength="c" retraction="true"/>
+    </Disabled>
+-->
+            <Chemotaxis field="Wnt11" contact-inhibition="false" strength="-c" retraction="true"/>
+        </CellType>
+        <CellType class="biological" name="endoderm">
+            <Property symbol="celltype" value="3"/>
+            <Property symbol="pU" value="0" name="production U"/>
+            <Property symbol="pBMP4" value="0" name="production BMP4"/>
+            <Property symbol="pBMP2" value="0.02" name="production BMP2"/>
+            <Property symbol="pWnt5a" value="0" name="production Wnt5a"/>
+            <Property symbol="pWnt11" value="0.02" name="production Wnt11"/>
+            <Event time-step="5">
+                <Condition>time >= 0</Condition>
+                <Rule symbol-ref="pU">
+                    <Expression>0</Expression>
+                </Rule>
+                <!--    <Disabled>
+        <Rule symbol-ref="pBMP4">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pBMP2">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pWnt5a">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+                <!--    <Disabled>
+        <Rule symbol-ref="pWnt11">
+            <Expression>0</Expression>
+        </Rule>
+    </Disabled>
+-->
+            </Event>
+            <Property symbol="endo_neighbors" value="0" name="number of neighboring endodermal cells"/>
+            <VolumeConstraint target="60" strength="1"/>
+            <SurfaceConstraint target="0.85" mode="aspherity" strength="1"/>
+            <Chemotaxis field="U" contact-inhibition="false" strength="en_chemo_strength" name="U" retraction="true"/>
+            <NeighborhoodReporter>
+                <Input scaling="cell" value="cell.type == celltype.endoderm.id"/>
+                <Output symbol-ref="endo_neighbors" mapping="sum"/>
+            </NeighborhoodReporter>
+            <Property symbol="pro" value="0" name="proliferation rate"/>
+            <Property symbol="dv" value="0" name="divisions"/>
+            <Event trigger="when true" compute-time="on-trigger" time-step="25">
+                <Condition>pro >= 0</Condition>
+                <Rule symbol-ref="pro">
+                    <Expression>pro+rand_int(0,1)</Expression>
+                </Rule>
+            </Event>
+            <CellDivision division-plane="random">
+                <Condition>pro >= 288</Condition>
+                <Triggers>
+                    <Rule symbol-ref="dv">
+                        <Expression>dv+1</Expression>
+                    </Rule>
+                    <Rule symbol-ref="pro">
+                        <Expression>0</Expression>
+                    </Rule>
+                </Triggers>
+            </CellDivision>
+            <!--    <Disabled>
+        <Property symbol="mtf" value="rand_int(0, 25)"/>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Property symbol="etf" value="rand_int(0, 25)"/>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Chemotaxis field="BMP2" contact-inhibition="false" strength="c" retraction="true"/>
+    </Disabled>
+-->
+            <Chemotaxis field="Wnt5a" contact-inhibition="false" strength="-c" name="Wnt5a" retraction="true"/>
+            <Property symbol="c" value="100.0" name="chemotactic strength"/>
+        </CellType>
+        <CellType class="medium" name="medium">
+            <Constant symbol="ppneighbors" value="0.0"/>
+            <Constant symbol="mesendo_neighbors" value="0.0"/>
+            <Constant symbol="meso_neighbors" value="0.0"/>
+            <Constant symbol="endo_neighbors" value="0.0"/>
+            <Constant symbol="pU" value="0.0" name="production U"/>
+            <Constant symbol="pBMP4" value="0.0" name="production BMP4"/>
+            <Constant symbol="pBMP2" value="0.0" name="production BMP2"/>
+            <Constant symbol="pWnt5a" value="0.0" name="production Wnt5a"/>
+            <Constant symbol="pWnt11" value="0.0" name="production Wnt11"/>
+        </CellType>
+    </CellTypes>
+    <CPM>
+        <Interaction default="0.0">
+            <Contact type1="ppcells" type2="medium" value="-10"/>
+            <Contact type1="ppcells" type2="ppcells" value="-20"/>
+            <Contact type1="ppcells" type2="mesendoderm" value="0"/>
+            <Contact type1="ppcells" type2="mesoderm" value="0"/>
+            <Contact type1="ppcells" type2="endoderm" value="0"/>
+            <Contact type1="mesendoderm" type2="medium" value="-10"/>
+            <Contact type1="mesendoderm" type2="mesendoderm" value="-20"/>
+            <Contact type1="mesendoderm" type2="mesoderm" value="0"/>
+            <Contact type1="mesendoderm" type2="endoderm" value="0"/>
+            <Contact type1="mesoderm" type2="medium" value="-10"/>
+            <Contact type1="mesoderm" type2="mesoderm" value="-20"/>
+            <Contact type1="mesoderm" type2="endoderm" value="0"/>
+            <Contact type1="endoderm" type2="medium" value="-10"/>
+            <Contact type1="endoderm" type2="endoderm" value="-20"/>
+        </Interaction>
+        <MonteCarloSampler stepper="edgelist">
+            <MCSDuration value="1.0"/>
+            <Neighborhood>
+                <Order>2</Order>
+            </Neighborhood>
+            <MetropolisKinetics temperature="10.0"/>
+        </MonteCarloSampler>
+        <ShapeSurface scaling="norm">
+            <Neighborhood>
+                <Distance>2.5</Distance>
+            </Neighborhood>
+        </ShapeSurface>
+    </CPM>
+    <CellPopulations>
+        <Population size="1" type="ppcells">
+            <InitRectangle mode="regular" number-of-cells="cell_density * size.x * size.y">
+                <Dimensions size="size.x, size.y, 0" origin="0.0, 0.0, 0.0"/>
+            </InitRectangle>
+        </Population>
+    </CellPopulations>
+    <Analysis>
+        <Gnuplotter time-step="plot_freq" decorate="false">
+            <Terminal persist="true" name="png"/>
+            <Plot>
+                <!--    <Disabled>
+        <Field symbol-ref="U" isolines="5" min="0.0" surface="true"/>
+    </Disabled>
+-->
+                <Cells value="celltype" min="0" max="3">
+                    <ColorMap>
+                        <Color value="3" color="red"/>
+                        <Color value="2" color="green"/>
+                        <Color value="1" color="blue"/>
+                        <Color value="0" color="gray"/>
+                    </ColorMap>
+                </Cells>
+                <CellLabels fontsize="5" value="dv" fontcolor="black"/>
+            </Plot>
+            <!--    <Disabled>
+        <Plot>
+            <Field symbol-ref="U" isolines="5" min="0.0" surface="true"/>
+        </Plot>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Plot>
+            <Field symbol-ref="BMP2" isolines="5" min="0.0" surface="true"/>
+        </Plot>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Plot>
+            <Field symbol-ref="Wnt5a" isolines="5" min="0.0" surface="true"/>
+        </Plot>
+    </Disabled>
+-->
+            <!--    <Disabled>
+        <Plot>
+            <Field symbol-ref="Wnt11" isolines="5" min="0.0" surface="true"/>
+        </Plot>
+    </Disabled>
+-->
+        </Gnuplotter>
+        <!--    <Disabled>
+        <DependencyGraph format="svg" exclude-plugins="Gnuplotter"/>
+    </Disabled>
+-->
+        <Logger time-step="log_freq">
+            <Input>
+                <Symbol symbol-ref="celltype"/>
+                <Symbol symbol-ref="cell.center.x"/>
+                <Symbol symbol-ref="cell.center.y"/>
+                <Symbol symbol-ref="cell.id"/>
+            </Input>
+            <Output>
+                <TextOutput/>
+            </Output>
+        </Logger>
+    </Analysis>
+</MorpheusModel>
