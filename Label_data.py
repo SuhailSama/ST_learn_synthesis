@@ -205,17 +205,17 @@ from utils import save2pkl
 path = os.getcwd()+"\\output\\"
 os.makedirs(path, exist_ok=True)
 
-img_raw_file = path + 'img_raw'
-img_feat_file = path + 'img_feat'
-img_y_file = path + 'img_y'
+img_raw_file = path + 'img_raw.pkl'
+img_feat_file = path + 'img_feat.pkl'
+img_y_file = path + 'img_y.pkl'
 
 save2pkl(img_raw_file,img_raw)
 save2pkl(img_feat_file,img_feat)
 save2pkl(img_y_file,img_y)
 
-traj_raw_file = path + 'traj_raw'
-traj_feat_file = path + 'traj_feat'
-traj_y_file = path + 'traj_y'
+traj_raw_file = path + 'traj_raw.pkl'
+traj_feat_file = path + 'traj_feat.pkl'
+traj_y_file = path + 'traj_y.pkl'
 
 save2pkl(traj_raw_file,traj_raw)
 save2pkl(traj_feat_file,traj_feat)
