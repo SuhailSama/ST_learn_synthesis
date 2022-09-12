@@ -6,7 +6,6 @@ import sys
 import os
 sys.path.insert(0, 'src')
 
-
 # stl stuff for creating stl formulae and calculating robustness
 import torch
 import stlcg
@@ -30,6 +29,7 @@ print("Running torch on: ", device)
 import classes and functions
 """
 from opt_backend import Space
+
 """
 load spatial predicate
 """

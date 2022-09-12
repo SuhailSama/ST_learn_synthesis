@@ -7,7 +7,7 @@ import os
 
 import matplotlib.pyplot as plt
 import pickle
-
+import mat73
 # for clustering, dimension reduction, feature selection
 from clustimage import Clustimage
 from tslearn.clustering import TimeSeriesKMeans
@@ -16,6 +16,7 @@ from tslearn.preprocessing import TimeSeriesScalerMeanVariance, TimeSeriesResamp
 sys.path.insert(0, 'src')
 seed = 0
 np.random.seed(seed)
+
 
 """
 define functions
@@ -154,14 +155,20 @@ def Temporal_cluster(traj_feat, metric = "euclidean", n_clusters=3,isplot =True,
 upload data 
 """
 
-# mat = mat73.loadmat('traj_raw_Turing.mat') # insert your filename here
-# traj_input_par = mat["parameters"]
+case = "rand"
+if case == "rand": 
+    traj_raw = np.random.rand(1000,6,6,3,10)
+elif case == "turing": 
+    mat = mat73.loadmat('traj_raw_Turing.mat') # insert your filename here
+    traj_input_par = mat["parameters"]
 
 
-# print(traj_input_par.shape)
-# traj_raw = mat["traj_raw"]
+    print(traj_input_par.shape)
+    traj_raw = mat["traj_raw"]
 
-traj_raw = np.random.rand(1000,6,6,3,10)
+
+
+
 img_dim = traj_raw.shape[1:-1]
 traj_raw = np.transpose(traj_raw, (0,4,1,2,3))
 num_traj = traj_raw.shape[0]

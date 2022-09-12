@@ -31,7 +31,7 @@ from learn_backend import train_model
 
     
 # upload labeled data 
-path = "D:\Projects\ST_learn_synthesis\output\\"
+path = "D:\\Projects\\ST_learn_synthesis\\output\\"
 
 # raw_traj = load_pkl(path+"traj_raw")
 # print(raw_traj.shape)
@@ -107,13 +107,9 @@ for t in range(num_times):
     X_t = traj_raw[:,t,:,:,:]
     traj_stl[:,t,:] = VGG16(X_t)
 
-
 # Boosted decision trees 
-
-
 def BDT_learn (traj_stl,traj_y, args):
     pass
-
 
 start   = datetime.datetime.now()
 

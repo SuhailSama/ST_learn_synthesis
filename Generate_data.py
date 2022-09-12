@@ -1,7 +1,7 @@
 # Import Packages
 
 import  os
-import sys
+# import sys
 from abm import model
 import numpy as np
 import datetime
@@ -70,4 +70,4 @@ if __name__=="__main__":
         with Pool(processes=num_processes) as pool:
             pool.map(parameter_sweep, yaml_array[:10])
     else: 
-        print("Invalid model name, please enter a valid value (abm or morpheus) ")
+        print("Invalid model name, please enter a valid value (\"abm\" or \"morpheus\") ")
