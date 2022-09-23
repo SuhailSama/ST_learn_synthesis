@@ -3,7 +3,8 @@ Packages
 """
 import numpy as np 
 import sys
-import os
+import cv2
+import os, glob
 
 import matplotlib.pyplot as plt
 import pickle
@@ -25,7 +26,33 @@ To do:
     - define fucntin for embedding + feature selection [use old function]
     - 
 """
-
+def read_mp4(my_dir):
+    os.chdir(my_dir)
+    
+    trajectories = np.empty((0,500, 500, 3,41))
+    
+    for file in glob.glob("*.mp4"):
+        print(file)
+        cap = cv2.VideoCapture("loading : ", file)
+        # Check if camera opened successfully
+        if (cap.isOpened()== False):
+          print("Error opening video stream or file")
+          cap.release()
+          continue 
+        trajectory = np.empty((500, 500, 3,0))
+        # Read until video is completed
+        while (cap.isOpened()):
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+            if ret == True:
+                trajectory = np.append(trajectory,np.expand_dims(frame,axis=3), axis=3)
+            # Break the loop
+            else:
+                break
+        trajectories = np.append(trajectories,np.expand_dims(trajectory,axis=0), axis=0)
+        cap.release() # release the video capture object
+        
+    return trajectories
 
 def spatial_cluster(Xraw,min_clust= 5,dim=[], max_clust= 15, method='pca-hog',verbose = 60,isplot = False):
     """
@@ -150,84 +177,87 @@ def Temporal_cluster(traj_feat, metric = "euclidean", n_clusters=3,isplot =True,
     return traj_y
 
 
-
-"""
-upload data 
-"""
-
-case = "rand"
-if case == "rand": 
-    traj_raw = np.random.rand(1000,6,6,3,10)
-elif case == "turing": 
-    mat = mat73.loadmat('traj_raw_Turing.mat') # insert your filename here
-    traj_input_par = mat["parameters"]
-
-
-    print(traj_input_par.shape)
-    traj_raw = mat["traj_raw"]
-
-
-
-
-img_dim = traj_raw.shape[1:-1]
-traj_raw = np.transpose(traj_raw, (0,4,1,2,3))
-num_traj = traj_raw.shape[0]
-num_time_steps = traj_raw.shape[1]
-img_raw =  traj_raw.reshape((-1,img_dim[0],img_dim[1],img_dim[2]))
-
-n_samples = 10000  # for 2 random indices
-index = np.random.choice(img_raw.shape[0],n_samples, replace=True)
-Xraw = img_raw[index].reshape((n_samples,-1))
-print("traj_raw.shape :",traj_raw.shape)
-print("img_raw.shape : ", img_raw.shape)
-print("Sampled img_raw.shape : ", Xraw.shape)
-"""
-Spatial clustering
-
-"""
-
-cl, img_feat, img_y = spatial_cluster(Xraw, dim = img_dim,method='hog')
-num_feat = img_feat.shape[1]
-"""
- temporal clustering
- 
-"""
-
-# embed ST trajectories 
-traj_feat = np.zeros([num_traj, num_time_steps, num_feat])
-traj_raw = traj_raw.reshape((num_traj, num_time_steps, -1))
-for t in range(num_time_steps):
-    X_t = cl.import_data(traj_raw[:,t,:])
-    X_temp = cl.extract_feat(X_t)
-    traj_feat[:,t,:] = X_temp
-
-traj_y = Temporal_cluster(traj_feat, n_clusters=3,isplot =True )
-""" 
-process and save data 
-"""
-
-from utils import save2pkl
-
-
-path = os.getcwd()+"\\output\\"
-os.makedirs(path, exist_ok=True)
-
-img_raw_file = path + 'img_raw.pkl'
-img_feat_file = path + 'img_feat.pkl'
-img_y_file = path + 'img_y.pkl'
-
-save2pkl(img_raw_file,img_raw)
-save2pkl(img_feat_file,img_feat)
-save2pkl(img_y_file,img_y)
-
-traj_raw_file = path + 'traj_raw.pkl'
-traj_feat_file = path + 'traj_feat.pkl'
-traj_y_file = path + 'traj_y.pkl'
-
-save2pkl(traj_raw_file,traj_raw)
-save2pkl(traj_feat_file,traj_feat)
-save2pkl(traj_y_file,traj_y)
-
-# plot and save performance metrics 
+if __name__ == "__main__": 
+    
+    """
+    upload data 
+    """
+    
+    # case = "rand"
+    # case = "turing"
+    case = "abm"
+    
+    if case == "rand": 
+        traj_raw = np.random.rand(1000,6,6,3,10)
+    
+    elif case == "turing": 
+        data_dir = ""
+        mat = mat73.loadmat('traj_raw_Turing.mat') # insert your filename here
+        traj_input_par = mat["parameters"]
+        print(traj_input_par.shape)
+        traj_raw = mat["traj_raw"]
+    
+    elif case == "abm":
+        data_folder = "D:/Projects/ST_learn_synthesis/data/abm"
+        
+        traj_raw = read_mp4(data_folder)
+    
+    num_traj,img_h,img_w,img_ch,num_time_steps = traj_raw.shape
+    img_dim = [img_h,img_w,img_ch]
+    traj_raw = np.transpose(traj_raw, (0,4,1,2,3)) # [num_traj,num_time_steps,img_h,img_w,img_ch]
+    img_raw =  traj_raw.reshape((-1,img_h,img_w,img_ch))
+    
+    n_samples = min(10000,num_traj*num_time_steps) # for 2 random indices
+    index = np.random.choice(img_raw.shape[0],n_samples, replace=True)
+    Xraw = img_raw[index].reshape((n_samples,-1))
+    print("traj_raw.shape :",traj_raw.shape)
+    print("img_raw.shape : ", img_raw.shape)
+    print("Sampled img_raw.shape : ", Xraw.shape)
+    
+    """
+    Spatial clustering
+    
+    """
+    cl, img_feat, img_y = spatial_cluster(Xraw, dim = img_dim,method='hog',max_clust= 10)
+    num_feat = img_feat.shape[1]
+    """
+     temporal clustering
+     
+    """
+    traj_feat = np.zeros([num_traj, num_time_steps, num_feat])
+    traj_raw = traj_raw.reshape((num_traj, num_time_steps, -1))
+    # embed ST trajectories 
+    for t in range(num_time_steps):
+        X_t = cl.import_data(traj_raw[:,t,:])
+        X_temp = cl.extract_feat(X_t)
+        traj_feat[:,t,:] = X_temp
+    
+    traj_y = Temporal_cluster(traj_feat, n_clusters=3,isplot =True )
+    """ 
+    process and save data 
+    """
+    
+    from utils import save2pkl
+    
+    path = os.getcwd()+"\\output\\"
+    os.makedirs(path, exist_ok=True)
+    
+    img_raw_file = path + 'img_raw.pkl'
+    img_feat_file = path + 'img_feat.pkl'
+    img_y_file = path + 'img_y.pkl'
+    
+    save2pkl(img_raw_file,img_raw)
+    save2pkl(img_feat_file,img_feat)
+    save2pkl(img_y_file,img_y)
+    
+    traj_raw_file = path + 'traj_raw.pkl'
+    traj_feat_file = path + 'traj_feat.pkl'
+    traj_y_file = path + 'traj_y.pkl'
+    
+    save2pkl(traj_raw_file,traj_raw)
+    save2pkl(traj_feat_file,traj_feat)
+    save2pkl(traj_y_file,traj_y)
+    
+    # plot and save performance metrics 
 
 

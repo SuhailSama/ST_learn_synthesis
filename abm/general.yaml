@@ -49,15 +49,15 @@ cluster_timer: 0
 
 # Pairwise Cell-Adhesion Parameters. Subscripts represent the colors of the cells.
 # Blue: CHO cells; Yellow: ABA induced cells; Red: DOX induced cells.
-# Alpha: noise parameter
-u_bb: 5
-u_rb: 1
-u_yb: 1
-u_rr: 30
-u_ry: 10
-u_yy: 40
-u_repulsion: 10000
-alpha: 10
-
-#Replication Type: None is no replication, Default is replication
-replication_type: None
+  # Alpha: noise parameter  
+u_bb: 1 
+u_rb: 1 
+u_yb: 1 
+u_rr: 30  
+u_ry: 1 
+u_yy: 40  
+u_repulsion: 10000  
+alpha: 10 
+#Replication Type: None is no replication, Default is replication 
+replication_type: None  
+gravity: 10

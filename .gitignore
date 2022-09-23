@@ -4,3 +4,6 @@
 *.ipa
 *.apk
 *.pth
+*.mp4
+*.pkl
+*_replication.yaml

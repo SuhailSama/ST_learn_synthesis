@@ -2,7 +2,9 @@
 import torch
 import numpy as np
 
+
 LARGE_NUMBER = 1E4
+
 
 def bump(input_tensor, left, right, slope):
     '''
