@@ -64,7 +64,7 @@ y_exp = stlcg.Expression('y_exp',y)
 
 #formula
 
-formula = stlcg.Always(subformula=ϕ1& ϕ2, interval=[2,3])
+formula = stlcg.Always(subformula=ϕ1 & ϕ2, interval=[2,3])
 print('formula is :' ,formula)
 
 #visualize the formula

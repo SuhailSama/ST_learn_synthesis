@@ -3,11 +3,12 @@
 import  os
 import sys
 from abm import model
-from turing import turing_model
+from turing.turing import turing_model
 import numpy as np
-import datetime
+import time, datetime
 from multiprocessing import Pool
-
+import itertools
+import pickle
 
 
 def parameter_sweep_abm(yaml_file):
@@ -32,13 +33,12 @@ def parameter_sweep_morpheus(parameters):
     print(run_file, flush=True)
     os.system(run_file)
     print("Finished parameter_sweep_morpheus")
-def parameter_sweep_turing(par_batch,num_sim_steps ,grid_size , 
-                 delta_t ,reg_freq, is_plot): 
-    batch_size  = par_batch.shape[0]
+def parameter_sweep_turing(par_batch,num_sim_steps = 10000,
+                       grid_size = 100, delta_t = 1.0,
+                       reg_freq =200, is_plot = False): 
     T           = num_sim_steps//reg_freq
     A_T_batch = np.empty((0,grid_size,grid_size,T))
     B_T_batch = np.empty((0,grid_size,grid_size,T))
-    print("Started parameter_sweep_turing")
     for par in par_batch:  
         A_T,B_T = turing_model(par,num_sim_steps ,grid_size, 
                          delta_t,reg_freq, is_plot)
@@ -46,9 +46,17 @@ def parameter_sweep_turing(par_batch,num_sim_steps ,grid_size ,
         #       "\n A_T_batch ", A_T_batch.shape)
         A_T_batch = np.append(A_T_batch, np.expand_dims(A_T, axis=0),axis=0) 
         B_T_batch = np.append(B_T_batch, np.expand_dims(B_T, axis=0),axis=0)
-    print("Finished parameter_sweep_turing")  
-    print("YAY! Generated ",batch_size , " trajectories!")
-    return A_T_batch # ,B_T_batch
+    
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    my_dic = {"par_batch": par_batch , "A_T_batch":A_T_batch,"B_T_batch": B_T_batch}
+    my_dir = r"D:\Projects\ST_learn_synthesis\data\turing"
+    my_file = "Turing_sim_"+timestr+".pkl"
+    outfile = os.path.join(my_dir, my_file)
+    with open(outfile, 'wb') as handle:
+        pickle.dump(my_dic, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        
+    # with open(, 'rb') as handle:
+    #     b = pickle.load(handle)
 
     
 if __name__=="__main__": 
@@ -107,22 +115,27 @@ if __name__=="__main__":
         print(simulation_time/num_sim)
         
     elif model_name =="turing":
-        num_processes = 10 # int(sys.argv[2])
-        DA = np.arange(0.01, 2,   0.1,  dtype=float)
-        DB = np.arange(0.01, 2,   0.1,  dtype=float)
-        f  = np.arange(0.01, 0.1, 0.01, dtype=float)
-        k   = np.arange(0.01,0.1, 0.01, dtype=float)
-        par_batch = np.array(np.meshgrid(DA, DB, f, k)).T.reshape(-1,4)
-        
+        num_processes = 50 # int(sys.argv[2])
+        DA = np.arange(0.01, 2,   0.1).tolist()
+        DB = np.arange(0.01, 2,   0.1).tolist()
+        f  = np.arange(0.01, 0.1, 0.01).tolist()
+        k  = np.arange(0.01,0.1, 0.01).tolist()
+        all_pars = [DA,DB,f,k]
+        par_batch = zip(itertools.product(*all_pars))
+        # np.array(np.meshgrid(DA, DB, f, k)).T.reshape(-1,4)
+        print("Started parameter_sweep_turing")
+
         start   = datetime.datetime.now()
-        A_T_batch = parameter_sweep_turing(par_batch,num_sim_steps = 10000,
-                               grid_size = 100, delta_t = 1.0,
-                               reg_freq =200, is_plot = False)
-        # with Pool(processes=num_processes) as pool:
-        #     pool.map(turing, yaml_array[:10])
-        num_sim = A_T_batch.shape[0]
+        # A_T_batch = parameter_sweep_turing(par_batch)
+        with Pool(processes=num_processes) as pool:
+            pool.map(parameter_sweep_turing, par_batch)
+        num_sim = len(all_pars)
         end = datetime.datetime.now()
         simulation_time = end - start
+        batch_size  = len(all_pars)
+
+        print("Finished parameter_sweep_turing")  
+        print("YAY! Generated ",batch_size , " trajectories!")
         print('simulation time: ')
         print(simulation_time)
         print('simulation time per run:')

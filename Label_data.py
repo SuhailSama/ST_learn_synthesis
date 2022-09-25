@@ -13,6 +13,7 @@ import mat73
 from clustimage import Clustimage
 from tslearn.clustering import TimeSeriesKMeans
 from tslearn.preprocessing import TimeSeriesScalerMeanVariance, TimeSeriesResampler
+import pandas as pd
 
 sys.path.insert(0, 'src')
 seed = 0
@@ -32,8 +33,8 @@ def read_mp4(my_dir):
     trajectories = np.empty((0,500, 500, 3,41))
     
     for file in glob.glob("*.mp4"):
-        print(file)
-        cap = cv2.VideoCapture("loading : ", file)
+        print("loading : ", file)
+        cap = cv2.VideoCapture(file)
         # Check if camera opened successfully
         if (cap.isOpened()== False):
           print("Error opening video stream or file")
@@ -54,7 +55,8 @@ def read_mp4(my_dir):
         
     return trajectories
 
-def spatial_cluster(Xraw,min_clust= 5,dim=[], max_clust= 15, method='pca-hog',verbose = 60,isplot = False):
+def spatial_cluster(Xraw,min_clust= 5,dim=[], max_clust= 15, method='pca-hog',
+                    verbose = 60,isplot = True):
     """
     
     literature and packages used
@@ -100,7 +102,7 @@ def spatial_cluster(Xraw,min_clust= 5,dim=[], max_clust= 15, method='pca-hog',ve
         cl.clusteval.scatter(xycoord)
         
         # PCA explained variance plot
-        cl.pca.plot()
+        # cl.pca.plot()
         
         # Dendrogram
         cl.dendrogram()
@@ -182,26 +184,47 @@ if __name__ == "__main__":
     """
     upload data 
     """
-    
+    num_samples = 50 # set to -1 to process all data
     # case = "rand"
-    # case = "turing"
     case = "abm"
+    # case = "turing1"
+    # case = "turing2"
     
     if case == "rand": 
         traj_raw = np.random.rand(1000,6,6,3,10)
     
-    elif case == "turing": 
-        data_dir = ""
-        mat = mat73.loadmat('traj_raw_Turing.mat') # insert your filename here
-        traj_input_par = mat["parameters"]
-        print(traj_input_par.shape)
-        traj_raw = mat["traj_raw"]
+
     
     elif case == "abm":
-        data_folder = "D:/Projects/ST_learn_synthesis/data/abm"
-        
+        data_folder = r"D:/Projects/ST_learn_synthesis/data/abm"
+        traj_input_par = r"D:/Projects/ST_learn_synthesis/data/abm/parameters"
         traj_raw = read_mp4(data_folder)
+        
+    elif case == "turing1": 
+        data_dir = r"D:/Projects/ST_learn_synthesis/data/traj_raw_Turing.mat"
+        mat = mat73.loadmat(data_dir) # insert your filename here
+        traj_input_par = mat["parameters"][:num_samples]
+        print("traj_input_par.shape : ", traj_input_par.shape)
+        traj_raw = mat["traj_raw"][:num_samples]
+        print("traj_raw.shape : ", traj_raw.shape)
+        
+    elif case == "turing2": 
+        data_dir = r"D:\Projects\ST_learn_synthesis\data\turing\*.pkl"
+        
+        files =  glob.glob(data_dir)
+        batch_size,img_dim,_,T = pd.read_pickle(files[0])["A_T_batch"].shape
+        num_par = len(pd.read_pickle(files[0])["par_batch"][0])
+        traj_raw = np.empty((0,img_dim,img_dim,T))
+        traj_input_par = np.empty((0,num_par))
+        for file in files[:num_samples]:
+            traj_info = pd.read_pickle(file)
+            traj_par = np.expand_dims(np.array(traj_info["par_batch"][0]),0)
+            traj_input_par = np.append(traj_input_par,traj_par,axis=0)
+            traj_raw = np.append(traj_raw,traj_info["A_T_batch"],axis=0)
+        print(traj_raw.shape)
     
+    if len(traj_raw.shape)==4:
+        traj_raw = np.repeat(traj_raw[:, :,:, np.newaxis,:], 3, axis=3)
     num_traj,img_h,img_w,img_ch,num_time_steps = traj_raw.shape
     img_dim = [img_h,img_w,img_ch]
     traj_raw = np.transpose(traj_raw, (0,4,1,2,3)) # [num_traj,num_time_steps,img_h,img_w,img_ch]
@@ -218,7 +241,8 @@ if __name__ == "__main__":
     Spatial clustering
     
     """
-    cl, img_feat, img_y = spatial_cluster(Xraw, dim = img_dim,method='hog',max_clust= 10)
+    cl, img_feat, img_y = spatial_cluster(Xraw, dim = img_dim,method='hog',
+                                          max_clust= 10,isplot = True)
     num_feat = img_feat.shape[1]
     """
      temporal clustering
@@ -239,7 +263,7 @@ if __name__ == "__main__":
     
     from utils import save2pkl
     
-    path = os.getcwd()+"\\output\\"
+    path = r"D:\Projects\ST_learn_synthesis\output"
     os.makedirs(path, exist_ok=True)
     
     img_raw_file = path + 'img_raw.pkl'

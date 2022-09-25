@@ -85,9 +85,7 @@ def turing_model(parameters,num_sim_steps = 10000,grid_size = 100,
         DA, DB, f, k = 0.16, 0.08, 0.060, 0.062 # intestins?
         DA, DB, f, k = 0.14, 0.06, 0.035, 0.065 # bacteria
     """
-    
     DA, DB, f, k = parameters
-    
     A = np.ones((3,3))
     A[1,1] = 0
     
