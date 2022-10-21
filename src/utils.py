@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import torch
 import numpy as np
-
+import pickle as pkl
 
 LARGE_NUMBER = 1E4
 
@@ -48,7 +48,7 @@ def print_learning_progress(formula, inputs, var_dict, i, loss, scale):
     vals.append(formula.robustness(inputs).detach().numpy())
     print(string%tuple(vals))
 
-import pickle as pkl
+
 
 def save2pkl(fileName,arrayInput):
     
@@ -57,7 +57,7 @@ def save2pkl(fileName,arrayInput):
     fileObject.close()
 
 def load_pkl(fileName):
-    fileObject2 = open(fileName, 'wb')
+    fileObject2 = open(fileName, 'rb')
     modelInput = pkl.load(fileObject2)
     fileObject2.close()
     return modelInput

@@ -105,3 +105,38 @@ def turing_model(parameters, is_plot = True):
         draw(A,B)
     
 
+
+
+def plot_traj(traj_X,traj_y):
+    num_clust =np.max(traj_y)+1
+    fig = plt.figure(figsize=(50, 50))  # width, height in inches
+    colors = ['r','b','g','k','r','b','g','k']
+    for i in range(num_clust):
+        print(i)
+        sub = fig.add_subplot(math.ceil(num_clust**0.5),
+                              math.ceil(num_clust**0.5), i+1)
+        Xt = traj_X[traj_y == i]
+        sub.plot(Xt,colors[i], alpha=0.3)
+        
+
+
+if __name__ == "__main__": 
+    from Label_data import Temporal_cluster
+    import math
+    from numpy import genfromtxt
+    num_traj = 200
+    num_times = 150
+    n_clusters = 8
+    my_data = genfromtxt('all_compiled_flux_trunc.csv', delimiter=',')
+    traj_X = my_data[1:,6:]
+    traj_y = Temporal_cluster(traj_X,metric = "softdtw", n_clusters=n_clusters,
+                         isplot =True,seed = 0,n_init =2,n_jobs = None )
+
+    # traj_X = np.random.rand(num_traj,num_times)
+    # traj_y = np.random.randint(n_clusters, size=(num_traj,))
+    plot_traj(traj_X,traj_y)
+    plt.figure()
+    plt.hist(traj_y, density=False, bins=max(traj_y)+1,
+             facecolor='g', alpha=0.75)  # density=False would make counts
+    plt.ylabel('count')
+    plt.xlabel('bins');
